@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>Airbnb Listing Price Recommender</title>
+        <!-- Font Awesome icons (free version)-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js" crossorigin="anonymous"></script>
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="static/styles.css" rel="stylesheet">
+        <!-- Fonts CSS-->
+        <link rel="stylesheet" href="static/heading.css">
+        <link rel="stylesheet" href="static/body.css">
+        <script>
+            function onload() {
+              var selectEls = document.getElementsByTagName("select");
+              for (var i = 0; i < selectEls.length; i++) {
+                var selectEl = selectEls[i];
+                var value = selectEl.getAttribute('_value')
+                console.log("value is "  + value);
+                for (var j = 0; j < selectEl.options.length; j++) {
+                 console.log(selectEl.options[j].text);
+                 if (value === selectEl.options[j].value) {
+                   selectEl.selectedIndex = j;
+                   break; 
+                 }
+               }
+             }
+           }
+           document.addEventListener("DOMContentLoaded", onload);
+
+         </script>
+
+          <style>
+              body {
+                background-color: #F0F8FF;
+                font-family: Helvetica, Arial, sans-serif;
+              }
+
+              div.content-container {
+                margin-top: 6em;
+                padding-left: 10em;
+                display: block;
+              }
+
+              input {
+                font-size: 16px;
+                font-family: sans-serif;
+                font-weight: 700;
+                color: #444;
+                line-height: 1;
+                padding: .6em 1.4em .5em .8em;
+                box-sizing: border-box;
+                margin: 0;
+                border: 1px solid #aaa;
+                box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+                border-radius: .5em;
+                -moz-appearance: none;
+                -webkit-appearance: none;
+                appearance: none;
+                background-color: #fff;
+              }
+
+              select {
+                display: block;
+                font-size: 16px;
+                font-family: sans-serif;
+                font-weight: 700;
+                color: #444;
+                line-height: 1;
+                padding: .6em 1.4em .5em .8em;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                margin: 0;
+                border: 1px solid #aaa;
+                box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+                border-radius: .5em;
+                -moz-appearance: none;
+                -webkit-appearance: none;
+                appearance: none;
+                background-color: #fff;
+                background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'),
+                linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
+                background-repeat: no-repeat, repeat;
+                background-position: right .7em top 50%, 0 0;
+                background-size: .65em auto, 100%;
+              }
+
+              div.content-container > form {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+              }
+
+              div.row {
+                display: flex;
+                flex-direction: row;
+                margin-top: 1.5em;
+              }
+
+              .group-col-container {
+                display: flex;
+                flex-direction: column; 
+                align-items: flex-start !important;
+                margin-right: 3em;
+                min-width: 10em;
+              }
+
+              .group-row-container {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                margin-bottom: 1em;
+              }
+
+              div.column {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-start !important;
+                margin-top: 2em;
+                margin-left: -1.5em;
+              }
+
+              label, input, select {
+                font-size: 20;
+                min-width: 10em;
+              }
+
+              label {
+                font-size: 24;
+                font-weight: bold;
+                color: #FFF;
+              }
+
+              .group-col-container > label {
+                margin-bottom: 0.3em;
+                align-items: flex-start !important;
+              }
+
+              .group-row-container > label {
+                margin-right: 1em;
+              }
+
+              #submit-button {
+                min-width: 9em;
+                background-color: #5b84b1;
+                font-weight: bold;
+              }
+
+              div.result {
+                font-size: 18px;
+                font-family: sans-serif;
+                font-weight: 700;
+                color: #FFF;
+                line-height: 1;
+                margin-left: 2em;
+                display: flex;
+                flex-direction: column; 
+              }
+
+              div.result span {
+                margin-top: 0.8em;
+                margin-bottom: 1em;
+                margin-left: 0.4em;
+              }
+              
+              table.dataframe, .dataframe th, .dataframe td {
+                  border: none;
+                  border-bottom: 1px solid #C8C8C8;
+                  border-collapse: collapse;
+                  text-align:left;
+                  padding: 10px;
+                  margin-bottom: 40px;
+                  font-size: 1em;
+                }
+
+        table.dataframe a {
+                  color: white !important;
+            }
+
+            div.container form {
+                margin-top: -5em;
+            }
+
+            </style>
+    </head>
+    <body id="page-top">
+        <nav class="navbar navbar-expand-lg bg-secondary fixed-top" id="mainNav">
+            <div class="container"><a class="navbar-brand js-scroll-trigger" href="/">Airbnb Listing Price Recommender</a>
+                <button class="navbar-toggler navbar-toggler-right font-weight-bold bg-primary text-white rounded" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">Menu <i class="fas fa-bars"></i></button>
+                <div class="collapse navbar-collapse" id="navbarResponsive">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#portfolio">ABOUT</a>
+                        </li>
+                        <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="https://github.com/wonder-ying">GITHUB</a>
+                        </li>
+                        <li class="nav-item mx-0 mx-lg-1"><a class="nav-link py-3 px-0 px-lg-3 rounded js-scroll-trigger" href="#contact">CONTACT</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <header class="masthead bg-primary text-white">
+            <div class="container d-flex align-items-center flex-column">
+                    <form action="/result#calculated-result" method="POST">
+      <div class="row">
+        <div class="group-col-container">
+          <label for="borough">Neighborhood</label>
+          <select id="borough" name="borough" _value="{{ borough }}">
+            <option value="Madrona">Madrona</option>
+            <option value="Georgetown">Georgetown</option>
+            <option value="Fairmount Park">Fairmount Park</option>
+            <option value="Wallingford">Wallingford</option>
+            <option value="Green Lake">Green Lake</option>
+            <option value="Belltown">Belltown</option>
+            <option value="Adams">Adams</option>
+            <option value="Whittier Heights">Whittier Heights</option>
+            <option value="Broadway">Broadway</option>
+            <option value="Loyal Heights">Loyal Heights</option>
+            <option value="Mid-Beacon Hill">Mid-Beacon Hill</option>
+            <option value="Windermere">Windermere</option>
+            <option value="West Woodland">West Woodland</option>
+            <option value="Seward Park">Seward Park</option>
+            <option value="Alki">Alki</option>
+            <option value="Stevens">Stevens</option>
+            <option value="North Admiral">North Admiral</option>
+            <option value="Fremont">Fremont</option>
+            <option value="Leschi">Leschi</option>
+            <option value="Harrison/Denny-Blaine">Harrison/Denny-Blaine</option>
+            <option value="North Beacon Hill">North Beacon Hill</option>
+            <option value="Mann">Mann</option>
+            <option value="Portage Bay">Portage Bay</option>
+            <option value="Phinney Ridge">Phinney Ridge</option>
+            <option value="View Ridge">View Ridge</option>
+            <option value="Crown Hill">Crown Hill</option>
+            <option value="Columbia City">Columbia City</option>
+            <option value="Matthews Beach">Matthews Beach</option>
+            <option value="North Queen Anne">North Queen Anne</option>
+            <option value="West Queen Anne">West Queen Anne</option>
+            <option value="North Beach/Blue Ridge">North Beach/Blue Ridge</option>
+            <option value="First Hill">First Hill</option>
+            <option value="Eastlake">Eastlake</option>
+            <option value="Atlantic">Atlantic</option>
+            <option value="Arbor Heights">Arbor Heights</option>
+            <option value="International District">International District</option>
+            <option value="Greenwood">Greenwood</option>
+            <option value="Wedgwood">Wedgwood</option>
+            <option value="Sunset Hill">Sunset Hill</option>
+            <option value="Cedar Park">Cedar Park</option>
+            <option value="Pike-Market">Pike-Market</option>
+            <option value="Riverview">Riverview</option>
+            <option value="Lower Queen Anne">Lower Queen Anne</option>
+            <option value="Mount Baker">Mount Baker</option>
+            <option value="Genesee">Genesee</option>
+            <option value="Central Business District">Central Business District</option>
+            <option value="Fauntleroy">Fauntleroy</option>
+            <option value="Bryant">Bryant</option>
+            <option value="University District">University District</option>
+            <option value="Minor">Minor</option>
+            <option value="South Delridge">South Delridge</option>
+            <option value="Broadview">Broadview</option>
+            <option value="Madison Park">Madison Park</option>
+            <option value="Maple Leaf">Maple Leaf</option>
+            <option value="Pioneer Square">Pioneer Square</option>
+            <option value="Ravenna">Ravenna</option>
+            <option value="Highland Park">Highland Park</option>
+            <option value="Brighton">Brighton</option>
+            <option value="Montlake">Montlake</option>
+            <option value="Haller Lake">Haller Lake</option>
+            <option value="Westlake">Westlake</option>
+            <option value="Victory Heights">Victory Heights</option>
+            <option value="North Delridge">North Delridge</option>
+            <option value="Roosevelt">Roosevelt</option>
+            <option value="Gatewood">Gatewood</option>
+            <option value="Lawton Park">Lawton Park</option>
+            <option value="East Queen Anne">East Queen Anne</option>
+            <option value="North College Park">North College Park</option>
+            <option value="Bitter Lake">Bitter Lake</option>
+            <option value="Briarcliff">Briarcliff</option>
+            <option value="Southeast Magnolia">Southeast Magnolia</option>
+            <option value="Interbay">Interbay</option>
+            <option value="Industrial District">Industrial District</option>
+            <option value="Seaview">Seaview</option>
+            <option value="High Point">High Point</option>
+            <option value="Yesler Terrace">Yesler Terrace</option>
+            <option value="Rainier Beach">Rainier Beach</option>
+            <option value="Holly Park">Holly Park</option>
+            <option value="Laurelhurst">Laurelhurst</option>
+            <option value="South Lake Union">South Lake Union</option>
+            <option value="Rainier View">Rainier View</option>
+            <option value="Pinehurst">Pinehurst</option>
+            <option value="Dunlap">Dunlap</option>
+            <option value="Olympic Hills">Olympic Hills</option>
+            <option value="Meadowbrook">Meadowbrook</option>
+            <option value="South Beacon Hill">South Beacon Hill</option>
+            <option value="South Park">South Park</option>
+            <option value="Roxhill">Roxhill</option>
+
+
+          </select>
+        </div>
+        <div class="group-col-container">
+          <label for="property_type">Property Type</label>
+          <select id="property_type" name="property_type" _value="{{ property_type }}">
+            <option value="House">House</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="group-col-container">
+          <label for="room_type">Room Type</label>
+          <select id="room_type" name="room_type" _value="{{ room_type }}">
+            <option value="Entire home/apt">Entire home/apt</option>
+            <option value="Private room">Private room</option>
+            <option value="Shared room">Shared room</option>
+            <option value="Hotel room">Hotel room</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="group-col-container">
+
+          <label for="host_is_superhost">Superhost</label>
+          <select id="host_is_superhost" name="host_is_superhost" _value="{{ host_is_superhost }}">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="group-col-container">
+          <label for="instant_bookable">Instant Bookable</label>
+          <select id="instant_bookable" name="instant_bookable" _value="{{ instant_bookable }}">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="group-col-container">
+          <label for="coffee_machine">With Coffee Machine</label>
+          <select id="coffee_machine" name="coffee_machine" _value="{{ coffee_machine }}">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+        <div class="group-col-container">
+          <label for="outdoor_space">With Outdoor Space</label>
+          <select id="outdoor_space" name="outdoor_space" _value="{{ outdoor_space }}">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="column">
+        <div class="group-row-container">
+          <label for="accommodates">Accomodates </label>
+          <input type="text" id="accommodates" name="accommodates" 
+          value={{ accommodates if accommodates else 2}} />
+        </div>
+        <div class="group-row-container">
+          <label for="bedrooms">Bedrooms </label>
+          <input type="text" id="bedrooms" name="bedrooms"
+          value={{ bedrooms if bedrooms else 1}} />
+        </div>
+        <div class="group-row-container">
+          <label for="bathrooms">Bathrooms </label>
+          <input type="text" id="bathrooms" name="bathrooms"
+          value={{ bathrooms if bathrooms else 1}} />
+        </div>
+        <div class="group-row-container">
+          <label for="minimum_nights" id="calculated-result">Minimum Nights </label>
+          <input type="text" id="minimum_nights" name="minimum_nights"
+          value={{ minimum_nights if minimum_nights else 1}} />
+        </div>
+        <div class="group-row-container">
+          <label for="maximum_nights">Maximum Nights </label>
+          <input type="text" id="maximum_nights" name="maximum_nights"
+          value={{ maximum_nights if maximum_nights else 15}} />
+        </div>
+        <div class="group-row-container">
+          <label for="security_deposit">Security Deposit </label>
+          <input type="text" id="security_deposit" name="security_deposit"
+          value={{ security_deposit if security_deposit else 0}} />
+        </div>
+        <div class="group-row-container">
+          <label for="cleaning_fee">Cleaning Fee </label>
+          <input type="text" id="cleaning_fee" name="cleaning_fee"
+          value={{ cleaning_fee if cleaning_fee else 50}} />
+        </div>
+        <div class="group-row-container">
+          <label for="host_total_listings_count">Total listings </label>
+          <input type="text" id="host_total_listings_count" name="host_total_listings_count"
+          value={{ host_total_listings_count if host_total_listings_count else 0}} />
+        </div>
+        <div class="group-row-container">
+          <input type="submit" id="submit-button" class="btn btn-primary" value="Calculate">
+          <div class="result">
+            {% if prediction %}
+            <span>Recommended Baseline Price for your listing: ${{ prediction }}</span>
+
+
+                {{ table|safe }}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </form>
+ <!-- Icon Divider-->
+                <div class="divider-custom divider-light">
+                    <div class="divider-custom-line"></div>
+                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                    <div class="divider-custom-line"></div>
+                </div>
+                <!-- Masthead Subheading-->
+                <p class="pre-wrap masthead-subheading font-weight-light mb-0"> </p>
+            </div>
+        </header>
+        <section class="page-section portfolio" id="portfolio">
+            <div class="container">
+                <!-- Portfolio Section Heading-->
+                <div class="text-center">
+                    <h2 class="page-section-heading text-secondary mb-0 d-inline-block">ABOUT THE TOOL</h2>
+                </div>
+                <!-- Icon Divider-->
+                <div class="divider-custom">
+                    <div class="divider-custom-line"></div>
+                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                    <div class="divider-custom-line"></div>
+                </div>
+                <!-- Portfolio Grid Items-->
+                <div class="container d-flex align-items-center flex-column">
+                <!-- Masthead Avatar Image--><img class="page1" src="static/Baseline Price Recommender  for Airbnb listings1.svg" alt="">
+                </div>
+                <div class="container d-flex align-items-center flex-column">
+                <!-- Masthead Avatar Image--><img class="page2" src="static/Baseline Price Recommender  for Airbnb listings2.svg" alt="">
+                </div>
+                <div class="container d-flex align-items-center flex-column">
+                <!-- Masthead Avatar Image--><img class="page2" src="static/Baseline Price Recommender  for Airbnb listings3.svg" alt="">
+                </div>
+
+                
+            </div>
+        </section>
+        
+        <section class="page-section" id="contact">
+            <div class="container">
+                <!-- Contact Section Heading-->
+                <div class="text-center">
+                    <h2 class="page-section-heading text-secondary d-inline-block mb-0">CONTACT</h2>
+                </div>
+                <!-- Icon Divider-->
+                <div class="divider-custom">
+                    <div class="divider-custom-line"></div>
+                    <div class="divider-custom-icon"><i class="fas fa-star"></i></div>
+                    <div class="divider-custom-line"></div>
+                </div>
+                <!-- Contact Section Content-->
+                <div class="row justify-content-center">
+                    <div class="col-lg-4">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="icon-contact mb-3"><i class="far fa-envelope"></i></div>
+                            <div class="text-muted">Email</div><a class="lead font-weight-bold" href="mailto:ying.wan@mg.thedataincubator.com">ying.wan@mg.thedataincubator.com</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="icon-contact mb-3"><i class="fab fa-fw fa-linkedin-in"></i></div>
+                            <div class="text-muted">Linkedin</div><a class="lead font-weight-bold" href="https://www.linkedin.com/in/ying-wan-2b241a20/">Connect with Ying!</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer class="footer text-center">
+            <div class="container">
+                <div class="row">
+                    <!-- Footer Location-->
+                    <!-- Footer Social Icons-->
+                    <!-- Footer About Text-->
+                </div>
+            </div>
+        </footer>
+        <!-- Copyright Section-->
+        <section class="copyright py-4 text-center text-white">
+            <div class="container"><small class="pre-wrap">Copyright © Ying Wan Capstone Website 2020</small></div>
+        </section>
+        <!-- Scroll to Top Button (Only visible on small and extra-small screen sizes)-->
+        <div class="scroll-to-top d-lg-none position-fixed"><a class="js-scroll-trigger d-block text-center text-white rounded" href=""><i class="fa fa-chevron-up"></i></a></div>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js"></script>
+        <!-- Third party plugin JS-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+        <!-- Contact form JS-->
+        <script src="assets/mail/jqBootstrapValidation.js"></script>
+        <script src="assets/mail/contact_me.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
